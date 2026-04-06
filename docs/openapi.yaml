@@ -1,0 +1,52 @@
+openapi: 3.1.0
+info:
+  title: AutoFlowAI API
+  version: 1.0.0
+servers:
+  - url: https://api.autoflowai.com/api/v1
+paths:
+  /workflows:
+    post:
+      summary: Create workflow
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name, userId, definitionJson]
+              properties:
+                name: { type: string }
+                userId: { type: string }
+                definitionJson: { type: object }
+      responses:
+        '201':
+          description: Workflow created
+  /workflows/{id}/trigger:
+    post:
+      summary: Queue manual workflow execution
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      responses:
+        '202':
+          description: Execution queued
+  /copilot/generate-workflow:
+    post:
+      summary: Generate workflow from natural language prompt
+      responses:
+        '200':
+          description: Generated workflow definition
+  /webhooks/{slug}:
+    post:
+      summary: Receive signed inbound webhook
+      parameters:
+        - in: path
+          name: slug
+          required: true
+          schema: { type: string }
+      responses:
+        '202': { description: accepted }
+        '401': { description: invalid signature }

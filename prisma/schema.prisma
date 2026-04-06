@@ -1,0 +1,74 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum ExecutionStatus {
+  queued
+  running
+  succeeded
+  failed
+}
+
+model User {
+  id           String        @id @default(cuid())
+  email        String        @unique
+  createdAt    DateTime      @default(now())
+  workflows    Workflow[]
+  integrations IntegrationConnection[]
+}
+
+model Workflow {
+  id                String              @id @default(cuid())
+  userId            String
+  name              String
+  definitionJson    Json
+  isActive          Boolean             @default(true)
+  createdAt         DateTime            @default(now())
+  updatedAt         DateTime            @updatedAt
+  user              User                @relation(fields: [userId], references: [id])
+  executions        WorkflowExecution[]
+  webhookEndpoints  WebhookEndpoint[]
+}
+
+model WorkflowExecution {
+  id               String          @id @default(cuid())
+  workflowId       String
+  status           ExecutionStatus @default(queued)
+  attempt          Int             @default(0)
+  startedAt        DateTime?
+  finishedAt       DateTime?
+  durationMs       Int?
+  errorMessage     String?
+  actionLogs       Json
+  triggerPayload   Json?
+  createdAt        DateTime        @default(now())
+  workflow         Workflow        @relation(fields: [workflowId], references: [id])
+}
+
+model IntegrationConnection {
+  id                 String   @id @default(cuid())
+  userId             String
+  provider           String
+  encryptedToken     String
+  encryptedRefresh   String?
+  tokenExpiresAt     DateTime?
+  scopes             String[]
+  rateLimitPerMinute Int      @default(60)
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+  user               User     @relation(fields: [userId], references: [id])
+}
+
+model WebhookEndpoint {
+  id            String   @id @default(cuid())
+  workflowId    String
+  slug          String   @unique
+  signingSecret String
+  createdAt     DateTime @default(now())
+  workflow      Workflow @relation(fields: [workflowId], references: [id])
+}
