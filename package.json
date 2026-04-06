@@ -1,0 +1,17 @@
+{
+  "name": "autoflowai",
+  "private": true,
+  "version": "0.1.0",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "concurrently \"npm --workspace apps/api run dev\" \"npm --workspace apps/web run dev\"",
+    "build": "npm run -ws build",
+    "check": "npm run -ws check"
+  },
+  "devDependencies": {
+    "concurrently": "^9.0.1"
+  }
+}
